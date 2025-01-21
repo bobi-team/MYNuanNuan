@@ -185,16 +185,25 @@
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="CTaskScript.h" />
     <ClInclude Include="framework.h" />
+    <ClInclude Include="Logger.hpp" />
     <ClInclude Include="MYNuanNuan.h" />
     <ClInclude Include="MYNuanNuanDlg.h" />
+    <ClInclude Include="NGame.h" />
+    <ClInclude Include="NuanMain.h" />
+    <ClInclude Include="obj.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="CTaskScript.cpp" />
     <ClCompile Include="MYNuanNuan.cpp" />
     <ClCompile Include="MYNuanNuanDlg.cpp" />
+    <ClCompile Include="NGame.cpp" />
+    <ClCompile Include="NuanMain.cpp" />
+    <ClCompile Include="obj.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -206,10 +215,15 @@
     <ResourceCompile Include="MYNuanNuan.rc" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Go.dll" />
     <None Include="res\MYNuanNuan.rc2" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="minimap.png" />
     <Image Include="res\MYNuanNuan.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="log.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
