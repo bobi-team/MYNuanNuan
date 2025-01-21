@@ -154,13 +154,12 @@
     <ClCompile Include="NGame.cpp" />
     <ClCompile Include="NuanMain.cpp" />
     <ClCompile Include="obj.cpp" />
-    <ClCompile Include="SGHTool.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Logger.hpp" />
     <ClInclude Include="NGame.h" />
     <ClInclude Include="NuanMain.h" />
     <ClInclude Include="obj.h" />
-    <ClInclude Include="SGHTool.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -7,11 +7,13 @@
 #include <chrono>
 #include<opencv2/opencv.hpp>
 #include "obj.h" 
+#include"Logger.hpp"
 #pragma comment(lib,"opencv_world4110d.lib")
-using namespace cv;
 using namespace std;
-#define 大漠插件路径 "E:\\DmLib\\xd47243.dll"
-#define 破解Dll路径 "E:\\DmLib\\Go.dll"
+using namespace cv;
+
+#define 大漠插件路径 "xd47243.dll"
+#define 破解Dll路径 "Go.dll"
 typedef void (WINAPI* GoFunProc)(DWORD g_dm);
 
 
@@ -23,11 +25,13 @@ public:
     RECT miniMapRect; // 小地图位置（假设使用OpenCV的Point结构）
     RECT pointRect;     //指针位置
     double characterAngle; // 当前角色方向角度
-    
+	Logger logger; // 日志记录器
     mutable std::mutex angleMutex;
 public:
     // 构造函数
-    NGame() {}
+    NGame() {
+      
+    }
 
     // 初始化方法
     bool Initialize(const string& windowName) {
@@ -40,10 +44,11 @@ public:
         GoFun(dm_hmodule);
         dm = new dmsoft();
         long nret = dm->Reg("", "");
-        cout << nret << endl;
+
         if (nret == 1)
         {
-            cout << "大漠注册成功" << endl;
+            logger.info("大漠注册成功");
+        
         }
         else
         {
@@ -135,18 +140,6 @@ public:
         }
     }
 
-    std::vector<int> find_peaks(const cv::Mat& gradX, int minDistance = 10, double threshold = 0.5) {
-        std::vector<int> peaks;
-        for (int col = 1; col < gradX.cols - 1; ++col) {
-            float prev = gradX.at<float>(col - 1);
-            float curr = gradX.at<float>(col);
-            float next = gradX.at<float>(col + 1);
-            if (curr > prev && curr > next && curr > threshold) {
-                peaks.push_back(col);
-            }
-        }
-        return peaks;
-    }
     void setCharacterAngle(double newAngle) {
         std::lock_guard<std::mutex> lock(angleMutex);
         characterAngle = newAngle;
@@ -155,16 +148,7 @@ public:
         std::lock_guard<std::mutex> lock(angleMutex);
         return characterAngle;
     }
-   
-    void RunLoop() {
-        while(1){
 
-            
-            // 间隔0.2秒
-            std::this_thread::sleep_for(std::chrono::milliseconds(2000));
-        }
-        
-    }
     void createAndSaveMaskFromImage(const std::string& image_path, const std::string& mask_path) {
         // 读取带有透明通道的图片
         cv::Mat image = cv::imread(image_path, cv::IMREAD_UNCHANGED);
@@ -207,180 +191,6 @@ public:
 
         return 0;
     }
-
-
-    void extractImageUsingMask(const std::string& image_path, const std::string& mask_path, const std::string& output_path) {
-        // 读取原始图像
-        cv::Mat image = cv::imread(image_path, cv::IMREAD_UNCHANGED);
-        // 读取掩码图像
-        cv::Mat mask = cv::imread(mask_path, cv::IMREAD_GRAYSCALE);
-
-        // 检查图像和掩码是否成功读取
-        if (image.empty() || mask.empty()) {
-            std::cerr << "Error: Unable to load image or mask" << std::endl;
-            return;
-        }
-
-        // 确保掩码是单通道的
-        if (mask.channels() != 1) {
-            std::cerr << "Error: Mask image is not single-channel" << std::endl;
-            return;
-        }
-
-        // 根据掩码扣取图像
-        cv::Mat masked_image;
-        image.copyTo(masked_image, mask);
-
-        // 保存扣取后的图像
-        if (!cv::imwrite(output_path, masked_image)) {
-            std::cerr << "Error: Unable to save extracted image at path " << output_path << std::endl;
-            return;
-        }
-
-        std::cout << "Extracted image saved successfully at " << output_path << std::endl;
-    }
-    int extracttest() {
-       
-        std::string image_path = "point.png";       // 替换为你的原始图片路径
-        std::string mask_path = "mask.png";         // 替换为你的掩码图片路径
-        std::string output_path = "tiqu.png";  // 替换为你要保存扣取后图片的路径
-        CapturePoint(image_path);
-        extractImageUsingMask(image_path, mask_path, output_path);
-
-        return 0;
-    }
-
-
-   
-
-
-    void rotateAndExtractImageUsingMask(const std::string& image_path, const std::string& mask_path, const std::string& output_dir) {
-        // 读取原始图像
-        cv::Mat image = cv::imread(image_path, cv::IMREAD_UNCHANGED);
-        // 读取掩码图像
-        cv::Mat mask = cv::imread(mask_path, cv::IMREAD_GRAYSCALE);
-
-        // 检查图像和掩码是否成功读取
-        if (image.empty() || mask.empty()) {
-            std::cerr << "Error: Unable to load image or mask" << std::endl;
-            return;
-        }
-
-        // 确保掩码是单通道的
-        if (mask.channels() != 1) {
-            std::cerr << "Error: Mask image is not single-channel" << std::endl;
-            return;
-        }
-
-        // 初始化变量以存储旋转的角度
-        int angle = 0;
-
-        // 循环旋转掩码图像，每10度旋转一次，总共旋转360度
-        for (int rotation_count = 0; rotation_count < 36; ++rotation_count) {
-            // 计算旋转矩阵
-            cv::Point2f center(mask.cols / 2.0, mask.rows / 2.0);
-            cv::Mat rotation_matrix = cv::getRotationMatrix2D(center, angle, 1.0);
-
-            // 执行旋转
-            cv::Mat rotated_mask;
-            cv::warpAffine(mask, rotated_mask, rotation_matrix, mask.size());
-
-            // 更新旋转角度
-            angle += 10;
-
-            // 根据旋转后的掩码扣取图像
-            cv::Mat masked_image;
-            image.copyTo(masked_image, rotated_mask);
-
-            // 生成输出路径
-            std::string output_path = output_dir + "/rotated_masked_image_" + std::to_string(rotation_count) + ".png";
-
-            // 保存扣取后的图像
-            if (!cv::imwrite(output_path, masked_image)) {
-                std::cerr << "Error: Unable to save extracted image at path " << output_path << std::endl;
-            }
-            else {
-                std::cout << "Extracted image " << rotation_count << " saved successfully at " << output_path << std::endl;
-            }
-        }
-
-        std::cout << "All rotations and extractions completed." << std::endl;
-    }
-
-    int rotatemasktest() {
-        std::string image_path = "point.png";       // 替换为你的原始图片路径
-        std::string mask_path = "mask.png";
-        std::string output_dir = "image";     // 替换为输出目录路径
-
-        rotateAndExtractImageUsingMask(image_path, mask_path, output_dir);
-
-        return 0;
-    }
-    void rotateImageAndExtractWithMask(const std::string& image_path, const std::string& mask_path, const std::string& output_dir) {
-        // 读取原始图像
-        cv::Mat image = cv::imread(image_path, cv::IMREAD_UNCHANGED);
-        // 读取掩码图像
-        cv::Mat mask = cv::imread(mask_path, cv::IMREAD_GRAYSCALE);
-
-        // 检查图像和掩码是否成功读取
-        if (image.empty() || mask.empty()) {
-            std::cerr << "Error: Unable to load image or mask" << std::endl;
-            return;
-        }
-
-        // 确保掩码是单通道的
-        if (mask.channels() != 1) {
-            std::cerr << "Error: Mask image is not single-channel" << std::endl;
-            return;
-        }
-
-        // 初始化变量以存储旋转的角度
-        int angle = 0;
-
-        // 循环旋转原始图像，每10度旋转一次，总共旋转360度
-        for (int rotation_count = 0; rotation_count < 36; ++rotation_count) {
-            // 计算旋转矩阵
-            cv::Point2f center(image.cols / 2.0, image.rows / 2.0);
-            cv::Mat rotation_matrix = cv::getRotationMatrix2D(center, angle, 1.0);
-
-            // 执行旋转
-            cv::Mat rotated_image;
-            cv::warpAffine(image, rotated_image, rotation_matrix, image.size());
-
-            // 更新旋转角度
-            angle += 10;
-
-            // 根据不旋转的掩码扣取旋转后的图像
-            cv::Mat masked_image;
-            rotated_image.copyTo(masked_image, mask);
-
-            // 生成输出路径
-            std::string output_path = output_dir + "/rotated_image_masked_" + std::to_string(rotation_count) + ".png";
-
-            // 保存扣取后的图像
-            if (!cv::imwrite(output_path, masked_image)) {
-                std::cerr << "Error: Unable to save extracted image at path " << output_path << std::endl;
-            }
-            else {
-                std::cout << "Extracted image " << rotation_count << " saved successfully at " << output_path << std::endl;
-            }
-        }
-
-        std::cout << "All rotations and extractions completed." << std::endl;
-    }
-
-    int rotateimagetest() {
-        std::string image_path = "point.png";       // 替换为你的原始图片路径
-        std::string mask_path = "mask.png";
-        std::string output_dir = "image1";     // 替换为输出目录路径
-
-        rotateImageAndExtractWithMask(image_path, mask_path, output_dir);
-
-        return 0;
-    }
-
-
-
     double calculateSimilarity(const cv::Mat& template_image, const cv::Mat& masked_image) {
         // 检查输入图像是否为空
         if (template_image.empty() || masked_image.empty()) {
@@ -488,129 +298,18 @@ public:
 
 
     void fangiangtest() {
-        std::string image_path = "point.png";      // 替换为你的原始图片路径
-        std::string mask_path = "mask.png";        // 替换为你的掩码图片路径
-        std::string template_path = "template.png"; // 替换为你的模板图片路径
+        std::string image_path = "../data/Img/point.png";      // 替换为你的原始图片路径
+        std::string mask_path = "../data/Img/mask.png";        // 替换为你的掩码图片路径
+        std::string template_path = "../data/Img/template.png"; // 替换为你的模板图片路径
       
         while (1) {
 
             CapturePoint(image_path);
             rotateAndExtractWithMask(image_path, mask_path, template_path);
+            Sleep(500);
         }
         
 
-    }
-    // 截取游戏窗口的函数，使用纯数字命名图片，并间隔2秒
-    void CaptureGameWindowsWithInterval(int maxFrames) {
-        int frameCount = 0;
-        while (frameCount < maxFrames) {
-            // 构建文件名
-            std::string filename = std::to_string(frameCount) + ".png";
-
-            // 调用截取游戏窗口的函数
-            CaptureGameWindow(filename);
-
-            // 输出信息，表示已经截取了一张图片
-            std::cout << "Captured " << filename << std::endl;
-
-            // 睡眠2秒
-            std::this_thread::sleep_for(std::chrono::seconds(3));
-
-            // 增加帧计数
-            ++frameCount;
-        }
-    }
-    void findAndMarkSmallMapPosition(const std::string& bigMapPath, const std::string& smallMapPath) {
-        // 加载大地图和小地图
-        CaptureMiniMapEx(smallMapPath.c_str());
-        cv::Mat bigMap = cv::imread(bigMapPath);
-        cv::Mat smallMap = cv::imread(smallMapPath);
-        if (bigMap.empty() || smallMap.empty()) {
-            std::cerr << "Error: One of the images did not load properly." << std::endl;
-            return;
-        }
-
-        // 转换为灰度图
-        cv::Mat grayBigMap, graySmallMap;
-        cv::cvtColor(bigMap, grayBigMap, cv::COLOR_BGR2GRAY);
-        cv::cvtColor(smallMap, graySmallMap, cv::COLOR_BGR2GRAY);
-
-        // 创建ORB检测器
-        cv::Ptr<cv::ORB> orb = cv::ORB::create();
-
-        // 检测关键点并计算描述符
-        std::vector<cv::KeyPoint> keypointsBigMap, keypointsSmallMap;
-        cv::Mat descriptorsBigMap, descriptorsSmallMap;
-        orb->detectAndCompute(grayBigMap, cv::noArray(), keypointsBigMap, descriptorsBigMap);
-        orb->detectAndCompute(graySmallMap, cv::noArray(), keypointsSmallMap, descriptorsSmallMap);
-
-        // 创建匹配器
-        cv::Ptr<cv::DescriptorMatcher> matcher = cv::BFMatcher::create(cv::NORM_HAMMING);
-
-        // 使用KNN匹配
-        std::vector<std::vector<cv::DMatch>> knn_matches;
-        matcher->knnMatch(descriptorsSmallMap, descriptorsBigMap, knn_matches, 2);
-
-        // 比率检验
-        const float ratio_threshold = 0.75f;
-        std::vector<cv::DMatch> good_matches;
-        for (size_t i = 0; i < knn_matches.size(); i++) {
-            if (knn_matches[i].size() > 1) {
-                if (knn_matches[i][0].distance < ratio_threshold * knn_matches[i][1].distance) {
-                    good_matches.push_back(knn_matches[i][0]);
-                }
-            }
-        }
-
-        // 绘制匹配结果
-        cv::Mat img_matches;
-        cv::drawMatches(smallMap, keypointsSmallMap, bigMap, keypointsBigMap, good_matches, img_matches,
-            cv::Scalar::all(-1), cv::Scalar::all(-1), std::vector<char>(), cv::DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS);
-
-        // 显示匹配结果
-        cv::imshow("Matches", img_matches);
-
-        // 如果有良好匹配，标记小地图在大地图上的位置
-        if (!good_matches.empty()) {
-            // 提取匹配点的位置
-            std::vector<cv::Point2f> obj;
-            std::vector<cv::Point2f> scene;
-            for (size_t i = 0; i < good_matches.size(); i++) {
-                obj.push_back(keypointsSmallMap[good_matches[i].queryIdx].pt);
-                scene.push_back(keypointsBigMap[good_matches[i].trainIdx].pt);
-            }
-
-            // 计算Homography
-            cv::Mat H = cv::findHomography(obj, scene, cv::RANSAC);
-
-            // 从Homography计算小地图的四个角在大地图上的位置
-            std::vector<cv::Point2f> obj_corners(4);
-            obj_corners[0] = cv::Point2f(0, 0);
-            obj_corners[1] = cv::Point2f(smallMap.cols, 0);
-            obj_corners[2] = cv::Point2f(smallMap.cols, smallMap.rows);
-            obj_corners[3] = cv::Point2f(0, smallMap.rows);
-            std::vector<cv::Point2f> scene_corners(4);
-            cv::perspectiveTransform(obj_corners, scene_corners, H);
-            // 继续绘制小地图在大地图上的位置
-            cv::line(bigMap, scene_corners[2] + cv::Point2f(smallMap.cols, 0), scene_corners[3] + cv::Point2f(smallMap.cols, 0), cv::Scalar(0, 255, 0), 4);
-            cv::line(bigMap, scene_corners[3] + cv::Point2f(smallMap.cols, 0), scene_corners[0] + cv::Point2f(smallMap.cols, 0), cv::Scalar(0, 255, 0), 4);
-
-            // 显示标记后的大地图
-            cv::imshow("Marked Big Map", bigMap);
-        }
-        else {
-            std::cout << "No good matches found." << std::endl;
-        }
-
-        // 等待用户按键后关闭所有窗口
-        cv::waitKey(0);
-        cv::destroyAllWindows();
-    }
-
-    int ditu() {
-        // 调用函数，替换为实际的大地图和小地图路径
-        findAndMarkSmallMapPosition("bigmap.png", "minimap.png");
-        return 0;
     }
  
 };
