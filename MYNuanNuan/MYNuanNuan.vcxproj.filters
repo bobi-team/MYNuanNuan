@@ -33,21 +33,6 @@
     <ClInclude Include="pch.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="NuanMain.h">
-      <Filter>源文件</Filter>
-    </ClInclude>
-    <ClInclude Include="obj.h">
-      <Filter>源文件</Filter>
-    </ClInclude>
-    <ClInclude Include="CTaskScript.h">
-      <Filter>源文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Logger.hpp">
-      <Filter>源文件</Filter>
-    </ClInclude>
-    <ClInclude Include="NGame.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MYNuanNuan.cpp">
@@ -57,18 +42,6 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="pch.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="NuanMain.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="obj.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="CTaskScript.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="NGame.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
@@ -81,21 +54,10 @@
     <None Include="res\MYNuanNuan.rc2">
       <Filter>资源文件</Filter>
     </None>
-    <None Include="Go.dll">
-      <Filter>源文件</Filter>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\MYNuanNuan.ico">
       <Filter>资源文件</Filter>
     </Image>
-    <Image Include="minimap.png">
-      <Filter>源文件</Filter>
-    </Image>
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="log.txt">
-      <Filter>源文件</Filter>
-    </Text>
   </ItemGroup>
 </Project>
