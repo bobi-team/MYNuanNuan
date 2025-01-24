@@ -20,13 +20,13 @@ int main()
       
             NGame game;
 
-             //初始化游戏，传入游戏窗口名称
-            if (!game.Initialize("无限暖暖")) {
-                return -1; // 如果初始化失败，则退出程序
-            }
+            // //初始化游戏，传入游戏窗口名称
+            //if (!game.Initialize("无限暖暖")) {
+            //    return -1; // 如果初始化失败，则退出程序
+            //}
             
-            game.fangiangtest();
- 
+            game.testTemplateMatching();
+
 
     return 0;
 
